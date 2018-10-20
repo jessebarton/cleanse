@@ -1,2 +1,4 @@
 /files/
 /.vscode
+/target
+**/*.rs.bk

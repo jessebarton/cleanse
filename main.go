@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -16,8 +15,7 @@ import (
 // if they are exactly the same put them in the duplicates folder.
 
 var fileInfo *os.File
-var beginning = "P:\\WDBlackDrive\\full_bring\\recup_dir."
-var end = "\\"
+var directoryPath = "./files/"
 
 func moveFile(fileName string, filePath string) {
 	err := os.Rename(fileName, filePath)
@@ -70,25 +68,23 @@ func main() {
 		fmt.Printf("%x  %s\n", m[path], path)
 	}
 
-	for i := 1; i < 520; i++ {
-		fmt.Println(strconv.Itoa(i))
-		files, err := ioutil.ReadDir(beginning + strconv.Itoa(i) + end)
-		if err != nil {
-			log.Fatalf("Could not read directory: %v", err)
-		}
-
-		for _, file := range files {
-			fileInfo, err = os.Open(beginning + strconv.Itoa(i) + end + file.Name())
-			if err != nil {
-				log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
-			}
-			fileInfo.Close()
-			extName, file := createDir(fileInfo.Name())
-
-			moveFile(beginning+strconv.Itoa(i)+end+file, "./"+extName+"/"+file)
-			continue
-		}
+	files, err := ioutil.ReadDir(directoryPath)
+	if err != nil {
+		log.Fatalf("Could not read directory: %v", err)
 	}
+
+	for _, file := range files {
+		fileInfo, err = os.Open(directoryPath + file.Name())
+		if err != nil {
+			log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
+		}
+		fileInfo.Close()
+		extName, file := createDir(fileInfo.Name())
+
+		moveFile(directoryPath+file, "./"+extName+"/"+file)
+		continue
+	}
+
 	elapsed := time.Since(start)
 	log.Printf("Finished in: %s", elapsed)
 }
