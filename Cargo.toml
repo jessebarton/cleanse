@@ -1,6 +1,0 @@
-[package]
-name = "fileManagement"
-version = "0.1.0"
-authors = ["jessebarton <jessebarton95@gmail.com>"]
-
-[dependencies]

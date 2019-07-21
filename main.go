@@ -2,20 +2,19 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
+
+	hash "github.com/jessebarton/cleanse/hash"
 )
 
 // Check for files that are duplicates using md5 and sha256 hashes
 // if they are exactly the same put them in the duplicates folder.
 
 var fileInfo *os.File
-var directoryPath = "./files/"
 
 func moveFile(fileName string, filePath string) {
 	err := os.Rename(fileName, filePath)
@@ -44,8 +43,6 @@ func createDir(path string) (string, string) {
 }
 
 func main() {
-	start := time.Now()
-
 	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
@@ -54,7 +51,7 @@ func main() {
 
 	log.SetOutput(f)
 
-	m, err := md5All(os.Args[1])
+	m, err := hash.Md5All(os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -68,23 +65,20 @@ func main() {
 		fmt.Printf("%x  %s\n", m[path], path)
 	}
 
-	files, err := ioutil.ReadDir(directoryPath)
-	if err != nil {
-		log.Fatalf("Could not read directory: %v", err)
-	}
+	// files, err := ioutil.ReadDir(directoryPath)
+	// if err != nil {
+	// 	log.Fatalf("Could not read directory: %v", err)
+	// }
 
-	for _, file := range files {
-		fileInfo, err = os.Open(directoryPath + file.Name())
-		if err != nil {
-			log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
-		}
-		fileInfo.Close()
-		extName, file := createDir(fileInfo.Name())
+	// for _, file := range files {
+	// 	fileInfo, err = os.Open(directoryPath + file.Name())
+	// 	if err != nil {
+	// 		log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
+	// 	}
+	// 	fileInfo.Close()
+	// 	extName, file := createDir(fileInfo.Name())
 
-		moveFile(directoryPath+file, "./"+extName+"/"+file)
-		continue
-	}
-
-	elapsed := time.Since(start)
-	log.Printf("Finished in: %s", elapsed)
+	// 	moveFile(directoryPath+file, "./"+extName+"/"+file)
+	// 	continue
+	// }
 }

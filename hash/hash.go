@@ -1,4 +1,4 @@
-package main
+package hash
 
 import (
 	"crypto/md5"
@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-func md5All(root string) (map[string][md5.Size]byte, error) {
+func Md5All(root string) (map[string][md5.Size]byte, error) {
 	m := make(map[string][md5.Size]byte)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -30,7 +30,7 @@ func md5All(root string) (map[string][md5.Size]byte, error) {
 	return m, nil
 }
 
-func sha1All(root string) (map[string][sha1.Size]byte, error) {
+func Sha1All(root string) (map[string][sha1.Size]byte, error) {
 	m := make(map[string][sha1.Size]byte)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
