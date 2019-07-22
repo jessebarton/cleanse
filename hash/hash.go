@@ -2,7 +2,7 @@ package hash
 
 import (
 	"crypto/md5"
-	"crypto/sha1"
+	"crypto/sha256"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -30,8 +30,8 @@ func Md5All(root string) (map[string][md5.Size]byte, error) {
 	return m, nil
 }
 
-func Sha1All(root string) (map[string][sha1.Size]byte, error) {
-	m := make(map[string][sha1.Size]byte)
+func Sha256All(root string) (map[string][sha256.Size]byte, error) {
+	s := make(map[string][sha256.Size]byte)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -43,11 +43,11 @@ func Sha1All(root string) (map[string][sha1.Size]byte, error) {
 		if err != nil {
 			return err
 		}
-		m[path] = sha1.Sum(data)
+		s[path] = sha256.Sum256(data)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return s, nil
 }
