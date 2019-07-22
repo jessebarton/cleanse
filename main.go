@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"crypto/sha512"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"strings"
 )
 
+var remove *bool
 var fileInfo *os.File
 var files = make(map[[sha512.Size]byte]string)
 
@@ -103,6 +105,8 @@ func checkDuplicate(path string, info os.FileInfo, err error) error {
 	hash := sha512.Sum512(data)
 	if v, ok := files[hash]; ok {
 		fmt.Printf("%q is a duplicate of %q\n", path, v)
+		deleteDup(*remove, v)
+
 	} else {
 		files[hash] = path
 	}
@@ -129,6 +133,15 @@ func organizeByExtension() {
 	}
 }
 
+func deleteDup(remove bool, v string) {
+	if remove == true {
+		os.Remove(v)
+		fmt.Printf("Removed: %v", v)
+	} else {
+		return
+	}
+}
+
 func main() {
 	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -137,14 +150,18 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	if len(os.Args) != 2 {
-		fmt.Printf("USAGE : %s <target_directory> \n", os.Args[0])
-		os.Exit(0)
-	}
+	// if len(os.Args) != 2 {
+	// 	fmt.Printf("USAGE : %s <target_directory> \n", os.Args[0])
+	// 	os.Exit(0)
+	// }
 
-	dir := os.Args[1]
+	dir := flag.String("directory", "", "Directory to Walk")
 
-	errs := filepath.Walk(dir, checkDuplicate)
+	remove = flag.Bool("delete", false, "Delete files.")
+
+	flag.Parse()
+
+	errs := filepath.Walk(*dir, checkDuplicate)
 	if errs != nil {
 		fmt.Println(errs)
 		os.Exit(1)
