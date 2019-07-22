@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	"crypto/sha256"
 	"crypto/sha512"
 	"fmt"
 	"io/ioutil"
@@ -39,6 +41,50 @@ func createDir(path string) (string, string) {
 	return extName, file
 }
 
+func md5All(root string) (map[string][md5.Size]byte, error) {
+	m := make(map[string][md5.Size]byte)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		m[path] = md5.Sum(data)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func sha256All(root string) (map[string][sha256.Size]byte, error) {
+	s := make(map[string][sha256.Size]byte)
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		s[path] = sha256.Sum256(data)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 func checkDuplicate(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		fmt.Println(err)
@@ -64,6 +110,25 @@ func checkDuplicate(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
+func organizeByExtension() {
+	files, err := ioutil.ReadDir(os.Args[1])
+	if err != nil {
+		log.Fatalf("Could not read directory: %v", err)
+	}
+
+	for _, file := range files {
+		fileInfo, err = os.Open(os.Args[1] + file.Name())
+		if err != nil {
+			log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
+		}
+		fileInfo.Close()
+		extName, file := createDir(fileInfo.Name())
+
+		moveFile(os.Args[1]+file, "./"+extName+"/"+file)
+		continue
+	}
+}
+
 func main() {
 	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -84,21 +149,4 @@ func main() {
 		fmt.Println(errs)
 		os.Exit(1)
 	}
-
-	// files, err := ioutil.ReadDir(os.Args[1])
-	// if err != nil {
-	// 	log.Fatalf("Could not read directory: %v", err)
-	// }
-
-	// for _, file := range files {
-	// 	fileInfo, err = os.Open(os.Args[1] + file.Name())
-	// 	if err != nil {
-	// 		log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
-	// 	}
-	// 	fileInfo.Close()
-	// 	extName, file := createDir(fileInfo.Name())
-
-	// 	moveFile(os.Args[1]+file, "./"+extName+"/"+file)
-	// 	continue
-	// }
 }
