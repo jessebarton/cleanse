@@ -136,7 +136,7 @@ func organizeByExtension() {
 func deleteDup(remove bool, v string) {
 	if remove == true {
 		os.Remove(v)
-		fmt.Printf("Removed: %v", v)
+		fmt.Printf("Removed: %v\n", v)
 	} else {
 		return
 	}
