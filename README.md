@@ -23,6 +23,12 @@ cleasne -directory=files/ -move=true
 
 ```
 
+## Task List
+
+- [x] Add command line flag for removeing files.
+- [x] Add command line flag for moving files to duplicate folder for review.
+- [] Add ability to move files from inter folders instead of single directories.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
