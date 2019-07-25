@@ -104,9 +104,8 @@ func checkDuplicate(path string, info os.FileInfo, err error) error {
 
 	hash := sha512.Sum512(data)
 	if v, ok := files[hash]; ok {
-		fmt.Printf("%q is a duplicate of %q\n", path, v)
-		deleteDup(*remove, v)
-
+		log.Printf("%q is a duplicate of %q\n", path, v)
+		deleteDup(*remove, path)
 	} else {
 		files[hash] = path
 	}
@@ -121,7 +120,7 @@ func organizeByExtension() {
 	}
 
 	for _, file := range files {
-		fileInfo, err = os.Open(os.Args[1] + file.Name())
+		fileInfo, err := os.Open(os.Args[1] + file.Name())
 		if err != nil {
 			log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
 		}
