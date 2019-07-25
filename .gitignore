@@ -4,3 +4,4 @@
 **/*.rs.bk
 /duplicate/
 logfile
+cleanse
