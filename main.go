@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
-	"crypto/sha256"
 	"crypto/sha512"
 	"flag"
 	"fmt"
@@ -10,10 +8,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
-var remove *bool
+var remove, move *bool
+var dir *string
 var fileInfo *os.File
 var files = make(map[[sha512.Size]byte]string)
 
@@ -43,76 +43,6 @@ func createDir(path string) (string, string) {
 	return extName, file
 }
 
-func md5All(root string) (map[string][md5.Size]byte, error) {
-	m := make(map[string][md5.Size]byte)
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.Mode().IsRegular() {
-			return nil
-		}
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		m[path] = md5.Sum(data)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func sha256All(root string) (map[string][sha256.Size]byte, error) {
-	s := make(map[string][sha256.Size]byte)
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.Mode().IsRegular() {
-			return nil
-		}
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		s[path] = sha256.Sum256(data)
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
-func checkDuplicate(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	if info.IsDir() {
-		return nil
-	}
-
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	hash := sha512.Sum512(data)
-	if v, ok := files[hash]; ok {
-		log.Printf("%q is a duplicate of %q\n", path, v)
-		deleteDup(*remove, path)
-	} else {
-		files[hash] = path
-	}
-
-	return nil
-}
-
 func organizeByExtension() {
 	files, err := ioutil.ReadDir(os.Args[1])
 	if err != nil {
@@ -132,13 +62,47 @@ func organizeByExtension() {
 	}
 }
 
-func deleteDup(remove bool, v string) {
+func checkDuplicate(file string, info os.FileInfo, err error) error {
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	if info.IsDir() {
+		return nil
+	}
+
+	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	hash := sha512.Sum512(data)
+	if v, ok := files[hash]; ok {
+		log.Printf("%q is a duplicate of %q\n", file, v)
+		handleFile(*remove, *move, *dir, file)
+	} else {
+		files[hash] = file
+	}
+
+	return nil
+}
+
+func handleFile(remove, move bool, dir, path string) {
 	if remove == true {
-		os.Remove(v)
-		fmt.Printf("Removed: %v\n", v)
+		os.Remove(path)
+		fmt.Printf("Removed: %v\n", path)
+	} else if move == true {
+		if _, err := os.Stat("duplicate"); os.IsNotExist(err) {
+			os.Mkdir("duplicate", 0777)
+		}
+		re := regexp.MustCompile(dir)
+		file := re.ReplaceAllString(path, "")
+		moveFile(path, "./duplicate/"+file)
 	} else {
 		return
 	}
+
 }
 
 func main() {
@@ -149,14 +113,10 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	// if len(os.Args) != 2 {
-	// 	fmt.Printf("USAGE : %s <target_directory> \n", os.Args[0])
-	// 	os.Exit(0)
-	// }
-
-	dir := flag.String("directory", "", "Directory to Walk")
+	dir = flag.String("directory", "", "Directory to Walk")
 
 	remove = flag.Bool("delete", false, "Delete files.")
+	move = flag.Bool("move", false, "Move files to duplicate directory")
 
 	flag.Parse()
 
