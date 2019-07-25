@@ -17,6 +17,44 @@ var dir *string
 var fileInfo *os.File
 var files = make(map[[sha512.Size]byte]string)
 
+func main() {
+	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
+	dir = flag.String("directory", "", "String - Directory to Walk: default empty")
+	remove = flag.Bool("delete", false, "Bool - Delete files: default false")
+	move = flag.Bool("move", false, "Bool - Move files to duplicate directory: default false")
+
+	flag.Parse()
+
+	errs := filepath.Walk(*dir, checkDuplicate)
+	if errs != nil {
+		fmt.Println(errs)
+		os.Exit(1)
+	}
+	// Organize files into there own folder named after there file extension
+	// files, err := ioutil.ReadDir(directoryPath)
+	// if err != nil {
+	// 	log.Fatalf("Could not read directory: %v", err)
+	// }
+
+	// for _, file := range files {
+	// 	fileInfo, err = os.Open(directoryPath + file.Name())
+	// 	if err != nil {
+	// 		log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
+	// 	}
+	// 	fileInfo.Close()
+	// 	extName, file := createDir(fileInfo.Name())
+
+	// 	moveFile(directoryPath+file, "./"+extName+"/"+file)
+	// 	continue
+	// }
+}
+
 func moveFile(fileName string, filePath string) {
 	err := os.Rename(fileName, filePath)
 	if err != nil {
@@ -93,8 +131,9 @@ func handleFile(remove, move bool, dir, path string) {
 		os.Remove(path)
 		fmt.Printf("Removed: %v\n", path)
 	} else if move == true {
-		if _, err := os.Stat("duplicate"); os.IsNotExist(err) {
-			os.Mkdir("duplicate", 0777)
+		if _, err := os.Stat("duplicate/" + path); os.IsNotExist(err) {
+			fmt.Println(path)
+			os.Mkdir("duplicate/"+path, 0777)
 		}
 		re := regexp.MustCompile(dir)
 		file := re.ReplaceAllString(path, "")
@@ -103,25 +142,4 @@ func handleFile(remove, move bool, dir, path string) {
 		return
 	}
 
-}
-
-func main() {
-	f, err := os.OpenFile("logfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-	log.SetOutput(f)
-
-	dir = flag.String("directory", "", "String - Directory to Walk: default empty")
-	remove = flag.Bool("delete", false, "Bool - Delete files: default false")
-	move = flag.Bool("move", false, "Bool - Move files to duplicate directory: default false")
-
-	flag.Parse()
-
-	errs := filepath.Walk(*dir, checkDuplicate)
-	if errs != nil {
-		fmt.Println(errs)
-		os.Exit(1)
-	}
 }
