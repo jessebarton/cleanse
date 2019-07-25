@@ -29,13 +29,13 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/lifechurch/restore/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/jessebarton/cleanse/tags).
 
 ## Authors
 
 * **Jesse Barton** - *Initial work* - [jessebarton](https://github.com/jessebarton)
 
-See also the list of [contributors](https://github.com/lifechurch/restore/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/jessebarton/cleanse/contributors) who participated in this project.
 
 ## License
 
