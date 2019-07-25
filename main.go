@@ -113,10 +113,9 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	dir = flag.String("directory", "", "Directory to Walk")
-
-	remove = flag.Bool("delete", false, "Delete files.")
-	move = flag.Bool("move", false, "Move files to duplicate directory")
+	dir = flag.String("directory", "", "String - Directory to Walk: default empty")
+	remove = flag.Bool("delete", false, "Bool - Delete files: default false")
+	move = flag.Bool("move", false, "Bool - Move files to duplicate directory: default false")
 
 	flag.Parse()
 
