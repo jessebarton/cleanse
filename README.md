@@ -6,11 +6,11 @@ Clean up directories on your system of duplicate files, with option to either re
 
 ```
   -delete
-    	Delete files.
+    	Bool - Delete files: default false
   -directory string
-    	Directory to Walk
+    	String - Directory to Walk: default empty
   -move
-    	Move files to duplicate directory
+    	Bool - Move files to duplicate directory: default false
 ```
 
 Examples:
