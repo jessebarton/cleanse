@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-var remove, move *bool
+var organize, remove, move *bool
 var dir *string
 var fileInfo *os.File
 var files = make(map[[sha512.Size]byte]string)
@@ -28,31 +28,39 @@ func main() {
 	dir = flag.String("directory", "", "String - Directory to Walk: default empty")
 	remove = flag.Bool("delete", false, "Bool - Delete files: default false")
 	move = flag.Bool("move", false, "Bool - Move files to duplicate directory: default false")
+	organize = flag.Bool("organize", false, "Bool - Organize files by extension and move to folder based on file ext")
 
 	flag.Parse()
 
-	errs := filepath.Walk(*dir, checkDuplicate)
-	if errs != nil {
-		fmt.Println(errs)
+	err = filepath.Walk(*dir, checkDuplicate)
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	// Organize files into there own folder named after there file extension
-	// files, err := ioutil.ReadDir(directoryPath)
-	// if err != nil {
-	// 	log.Fatalf("Could not read directory: %v", err)
-	// }
 
-	// for _, file := range files {
-	// 	fileInfo, err = os.Open(directoryPath + file.Name())
-	// 	if err != nil {
-	// 		log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
-	// 	}
-	// 	fileInfo.Close()
-	// 	extName, file := createDir(fileInfo.Name())
+	organizeFiles(*organize)
+}
 
-	// 	moveFile(directoryPath+file, "./"+extName+"/"+file)
-	// 	continue
-	// }
+func organizeFiles(organize bool) {
+	if organize == true {
+		// Organize files into there own folder named after there file extension
+		files, err := ioutil.ReadDir(*dir)
+		if err != nil {
+			log.Fatalf("Could not read directory: %v", err)
+		}
+
+		for _, file := range files {
+			fileInfo, err = os.Open(*dir + file.Name())
+			if err != nil {
+				log.Fatalf("Could not readfile: %s - %v", file.Name(), err)
+			}
+			fileInfo.Close()
+			extName, file := createDir(fileInfo.Name())
+
+			moveFile(*dir+file, "./"+extName+"/"+file)
+			continue
+		}
+	}
 }
 
 func moveFile(fileName string, filePath string) {
